@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#7fc7ff" />
+    <meta name="description" content="Blockscape — a procedural voxel sandbox in your browser." />
+    <title>Blockscape</title>
+  </head>
+  <body>
+    <main id="game" aria-label="Blockscape game viewport"></main>
+
+    <section id="start-screen" class="screen visible" aria-labelledby="game-title">
+      <div class="sun-glow"></div>
+      <div class="menu-panel">
+        <div class="logo-wrap">
+          <p class="eyebrow">A PROCEDURAL VOXEL WORLD</p>
+          <h1 id="game-title" class="logo" data-text="BLOCKSCAPE">BLOCKSCAPE</h1>
+          <p id="splash" class="splash">Every block is yours.</p>
+        </div>
+        <div id="loading-state" class="loading-state">
+          <span class="loader" aria-hidden="true"></span>
+          <span>Shaping the world...</span>
+        </div>
+        <button id="play-button" class="primary-button" type="button" disabled>
+          <span>ENTER WORLD</span><kbd>CLICK</kbd>
+        </button>
+        <div class="seed-line">WORLD SEED <strong id="seed-value">—</strong></div>
+        <div class="controls-card">
+          <div><kbd>WASD</kbd><span>Move</span></div>
+          <div><kbd>SPACE</kbd><span>Jump / swim</span></div>
+          <div><kbd>SHIFT</kbd><span>Sneak</span></div>
+          <div><kbd>R</kbd><span>Sprint</span></div>
+          <div><kbd>LMB</kbd><span>Mine / attack</span></div>
+          <div><kbd>RMB</kbd><span>Place</span></div>
+          <div><kbd>E</kbd><span>Inventory / craft</span></div>
+          <div><kbd>Q</kbd><span>Drop</span></div>
+          <div><kbd>F</kbd><span>Fly (creative)</span></div>
+        </div>
+        <p class="desktop-note">Best experienced with a keyboard and mouse</p>
+      </div>
+    </section>
+
+    <section id="pause-screen" class="screen" aria-labelledby="pause-title">
+      <div class="menu-panel compact">
+        <p class="eyebrow">GAME PAUSED</p>
+        <h2 id="pause-title">The world is waiting.</h2>
+        <button id="resume-button" class="primary-button" type="button">RESUME</button>
+        <button id="mode-button" class="secondary-button" type="button">SWITCH TO CREATIVE</button>
+        <button id="new-world-button" class="secondary-button" type="button">CREATE NEW WORLD</button>
+        <p class="pause-hint">Punch a log, press <kbd>E</kbd> for inventory and the recipe book, then place a crafting table and right-click it for tools. Press <kbd>ESC</kbd> to release your cursor.</p>
+      </div>
+    </section>
+
+    <section id="death-screen" class="screen" aria-labelledby="death-title">
+      <div class="menu-panel compact death-panel">
+        <p class="eyebrow">YOU DIED</p>
+        <h2 id="death-title">That last step was ambitious.</h2>
+        <p id="death-cause" class="death-cause">You died.</p>
+        <button id="respawn-button" class="primary-button" type="button">RESPAWN</button>
+      </div>
+    </section>
+
+    <div id="hud" class="hud" aria-hidden="true">
+      <div class="top-bar">
+        <div class="world-chip">
+          <span class="live-dot"></span>
+          <span id="biome-value">PLAINS</span>
+        </div>
+        <div id="coordinates" class="coordinates">XYZ 0 / 0 / 0</div>
+        <div id="performance" class="performance">60 FPS · 0 CHUNKS</div>
+      </div>
+      <div id="save-indicator" class="save-indicator">WORLD SAVED</div>
+      <div class="crosshair" aria-hidden="true"><i></i><b></b></div>
+      <div id="target-label" class="target-label"></div>
+      <div id="mine-bar" class="mine-bar" aria-hidden="true"><i id="mine-fill"></i></div>
+      <div class="vitals">
+        <div id="hearts" class="hearts" aria-label="Health">♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥</div>
+        <div id="hunger" class="hunger" aria-label="Energy">◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆</div>
+      </div>
+      <div id="breath" class="breath" aria-label="Breath"></div>
+      <div id="hotbar" class="hotbar" aria-label="Block hotbar"></div>
+      <div class="action-hints">
+        <span><b>LMB</b> MINE</span>
+        <span><b>RMB</b> PLACE</span>
+        <span><b>E</b> INV</span>
+        <span><b>R</b> SPRINT</span>
+        <span><b>Q</b> DROP</span>
+      </div>
+      <div id="toast" class="toast" role="status"></div>
+      <div id="damage-vignette" class="damage-vignette"></div>
+      <div id="water-overlay" class="water-overlay"></div>
+      <div id="lava-overlay" class="lava-overlay"></div>
+    </div>
+
+    <section id="craft-screen" class="screen" aria-labelledby="craft-heading">
+      <div class="craft-panel">
+        <div class="craft-header">
+          <p class="eyebrow">PLAYER</p>
+          <h2 id="craft-heading">Inventory</h2>
+          <button id="craft-close" class="secondary-button" type="button">CLOSE</button>
+        </div>
+        <div class="craft-body">
+          <div class="craft-bench-wrap">
+            <p class="craft-label">Crafting grid</p>
+            <div class="craft-bench">
+              <div id="craft-grid" class="craft-grid"></div>
+              <div class="craft-arrow" aria-hidden="true">→</div>
+              <div id="craft-result" class="craft-slot result"></div>
+            </div>
+            <p class="craft-hint">Move items into the grid, or craft from the book. Tools need a crafting table.</p>
+          </div>
+          <div class="recipe-book">
+            <div class="recipe-book-head">
+              <p class="eyebrow">RECIPE BOOK</p>
+              <span id="recipe-ready">0 ready</span>
+            </div>
+            <div id="recipe-list" class="recipe-list"></div>
+          </div>
+        </div>
+        <div id="inv-grid" class="inv-grid" aria-label="Inventory"></div>
+      </div>
+      <div id="cursor-item" class="cursor-item"></div>
+    </section>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
