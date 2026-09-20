@@ -16,6 +16,7 @@ import {
   isSolid,
   isTool,
   itemDurability,
+  itemMaxStack,
   itemToolType,
   mineMultiplier,
 } from './blocks';
@@ -97,6 +98,7 @@ export class Game {
   private readonly clock = new THREE.Clock();
   private readonly ui: GameUI;
   private readonly inventory = new Inventory();
+  private survivalInventory: InventorySave | null = null;
   private readonly hemisphereLight = new THREE.HemisphereLight(0xaedcff, 0x4e3925, 1.5);
   private readonly sun = new THREE.DirectionalLight(0xfff3d1, 2.4);
   private readonly sunTarget = new THREE.Object3D();
@@ -344,18 +346,17 @@ export class Game {
     this.invulnerable = Math.max(0, this.invulnerable - deltaTime);
     this.attackCooldown = Math.max(0, this.attackCooldown - deltaTime);
 
-    if (this.started && this.player.pointerLocked && !this.dead) {
+    const playing = this.started && this.player.pointerLocked && !this.dead;
+    if (playing) {
       this.player.update(deltaTime);
       if (this.player.enteredWater) this.playTone(420, 0.12, 'sine', 0.08);
       this.updateSurvival(deltaTime);
       this.updateMining(deltaTime);
       this.updateFootsteps();
-    }
-    this.world.updateStreaming(this.player.position.x, this.player.position.z);
-    if (!this.dead) {
       const mobDamage = this.mobs.update(deltaTime, this.player.position, this.daylight);
       if (mobDamage > 0) this.hurt(mobDamage, 'A zombie got you.');
     }
+    this.world.updateStreaming(this.player.position.x, this.player.position.z);
     this.updateTarget();
     this.updateDayNight(deltaTime);
     this.updateClouds(deltaTime);
@@ -648,6 +649,7 @@ export class Game {
     };
     if (this.cursorStack) {
       if (this.cursorStack.block !== result.block || isTool(result.block)) return;
+      if (this.cursorStack.count + result.count > itemMaxStack(result.block)) return;
       this.cursorStack.count += result.count;
     } else {
       this.cursorStack = result;
@@ -687,6 +689,7 @@ export class Game {
     this.mode = this.mode === 'survival' ? 'creative' : 'survival';
     this.player.allowFlight = this.mode === 'creative';
     if (this.mode === 'creative') {
+      this.survivalInventory = this.inventory.serialize();
       this.inventory.fillCreativePalette();
       this.health = 20;
       this.energy = 20;
@@ -694,6 +697,8 @@ export class Game {
       this.ui.toast('Creative — infinite blocks, press F to fly');
     } else {
       this.player.flying = false;
+      if (this.survivalInventory) this.inventory.load(this.survivalInventory);
+      else this.inventory.slots.fill(null);
       this.ui.toast('Survival — gather, craft, and stay alive');
     }
     this.ui.setMode(this.mode);

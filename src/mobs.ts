@@ -391,6 +391,7 @@ export class Mob {
 export class MobManager {
   private readonly mobs: Mob[] = [];
   private spawnTimer = 4;
+  private animalTimer = 8;
   private readonly scene: THREE.Scene;
   private readonly world: VoxelWorld;
 
@@ -417,12 +418,24 @@ export class MobManager {
   update(deltaTime: number, playerPosition: THREE.Vector3, daylight: number): number {
     let damage = 0;
     this.spawnTimer -= deltaTime;
+    this.animalTimer -= deltaTime;
     if (daylight < 0.18 && this.spawnTimer <= 0 && this.hostileCount() < 5) {
       this.spawnTimer = 5 + Math.random() * 6;
       const angle = Math.random() * Math.PI * 2;
       const radius = 14 + Math.random() * 10;
       this.trySpawn(
         'zombie',
+        Math.floor(playerPosition.x + Math.cos(angle) * radius),
+        Math.floor(playerPosition.z + Math.sin(angle) * radius),
+      );
+    }
+    if (this.animalTimer <= 0 && this.passiveCount() < 8) {
+      this.animalTimer = 6 + Math.random() * 8;
+      const kinds: MobKind[] = ['pig', 'cow', 'chicken'];
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 12 + Math.random() * 16;
+      this.trySpawn(
+        kinds[Math.floor(Math.random() * kinds.length)],
         Math.floor(playerPosition.x + Math.cos(angle) * radius),
         Math.floor(playerPosition.z + Math.sin(angle) * radius),
       );
@@ -463,6 +476,10 @@ export class MobManager {
 
   private hostileCount(): number {
     return this.mobs.filter((mob) => mob.hostile).length;
+  }
+
+  private passiveCount(): number {
+    return this.mobs.filter((mob) => !mob.hostile).length;
   }
 
   private trySpawn(kind: MobKind, x: number, z: number): void {
